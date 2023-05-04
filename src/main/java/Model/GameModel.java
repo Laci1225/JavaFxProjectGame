@@ -3,13 +3,14 @@ package Model;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class GameModel {
 
     private final int ROW_SIZE = 5;
     private final int COL_SIZE = 4;
-    private static Item[] items;
+    protected static Item[] items;
 
     public GameModel() {
         this(
@@ -28,40 +29,43 @@ public class GameModel {
         GameModel.items = items;
     }
 
-    public boolean isOnTable(Position position) {
-        return (-1 < position.row() && position.row() < ROW_SIZE &&
-                -1 < position.col() && position.col() < COL_SIZE);
+    Position from;
+    Position to;
+    ItemType turn = ItemType.BLUE;
+
+    private Position selectFrom(Position p) {
+        if (isOnTable(p) && !isNotOccupied(p)) {
+            from = p;
+            return from;
+        } else throw new IllegalArgumentException("Not an Item");
     }
 
-    public boolean isNotOccupied(Position position) {
-        for (var piece : items) {
-            if (position.equals(piece.position()))
-                return false;
-        }
-        return true;
+    private Position selectTo(Position p) {
+        if (isOnTable(p) && isNotOccupied(p)) {
+            to = p;
+            turn = turn.switchColor();
+            return to;
+        } else throw new IllegalArgumentException("Not an empty Square");
     }
 
-    public List<Position> possibleMovement(Position position) {
-        List<Position> possibleMovements = new ArrayList<>();
-        if (isOnTable(position.getUp()) && isNotOccupied(position.getUp()))
-            possibleMovements.add(position.getUp());
-        if (isOnTable(position.getRight()) && isNotOccupied(position.getRight()))
-            possibleMovements.add(position.getRight());
-        if (isOnTable(position.getDown()) && isNotOccupied(position.getDown()))
-            possibleMovements.add(position.getDown());
-        if (isOnTable(position.getLeft()) && isNotOccupied(position.getLeft()))
-            possibleMovements.add(position.getLeft());
 
-        return possibleMovements;
-    }
+    public void moveItem(Position position, Direction direction) {
+        //System.out.println(position);
+        var item = Arrays.stream(items).filter(x -> x.position().equals(position)).findFirst();
 
-    public String[][] toStringToTable() {
-        String[] rows = toString().split("\n");
-        String[][] stringArray = new String[rows.length][];
-        for (int i = 0; i < rows.length; i++) {
-            stringArray[i] = rows[i].split(" ");
-        }
-        return stringArray;
+        if (item.isPresent() && possibleMovement(item.get().position()).contains(position.getPosition(direction))) {
+            if (!(selectFrom(position) == item.get().position() && turn == item.get().type()))
+                throw new IllegalArgumentException();
+
+            System.out.println("From: " + item.get());
+
+            if (!(possibleMovement(item.get().position()).contains(selectTo(position.getPosition(direction)))))
+                throw new IllegalArgumentException();
+
+            System.out.println("To:" + item.get());
+
+            item.get().moveTo(direction);
+        } else throw new IllegalArgumentException("Not a step/Not an item");
     }
 
     public Pair<ItemType, Boolean> checkTargetState() {
@@ -119,6 +123,42 @@ public class GameModel {
             }
         }
         return new Pair<>(null, false);
+    }
+
+    public String[][] toStringToTable() {
+        String[] rows = toString().split("\n");
+        String[][] stringArray = new String[rows.length][];
+        for (int i = 0; i < rows.length; i++) {
+            stringArray[i] = rows[i].split(" ");
+        }
+        return stringArray;
+    }
+
+    public List<Position> possibleMovement(Position position) {
+        List<Position> possibleMovements = new ArrayList<>();
+        if (isOnTable(position.getUp()) && isNotOccupied(position.getUp()))
+            possibleMovements.add(position.getUp());
+        if (isOnTable(position.getRight()) && isNotOccupied(position.getRight()))
+            possibleMovements.add(position.getRight());
+        if (isOnTable(position.getDown()) && isNotOccupied(position.getDown()))
+            possibleMovements.add(position.getDown());
+        if (isOnTable(position.getLeft()) && isNotOccupied(position.getLeft()))
+            possibleMovements.add(position.getLeft());
+
+        return possibleMovements;
+    }
+
+    public boolean isOnTable(Position position) {
+        return (-1 < position.row() && position.row() < ROW_SIZE &&
+                -1 < position.col() && position.col() < COL_SIZE);
+    }
+
+    public boolean isNotOccupied(Position position) {
+        for (var piece : items) {
+            if (position.equals(piece.position()))
+                return false;
+        }
+        return true;
     }
 
     @Override

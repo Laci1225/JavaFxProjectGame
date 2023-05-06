@@ -34,17 +34,20 @@ public class GameModel {
         GameModel.items = items;
     }
 
-    ItemType turn = ItemType.BLUE;
+    public ItemType turn = ItemType.BLUE;
+    public boolean selectFrom;
 
-    private Position selectFrom(Position p) {
+    public Position selectFrom(Position p) {
         if (isOnTable(p) && !isNotOccupied(p)) {
+            selectFrom = true;
             return p;
         } else throw new IllegalArgumentException("Not an Item");
     }
 
-    private Position selectTo(Position p) {
+    public Position selectTo(Position p) {
         if (isOnTable(p) && isNotOccupied(p)) {
             turn = turn.switchColor();
+            selectFrom = false;
             return p;
         } else throw new IllegalArgumentException("Not an empty Square");
     }
@@ -55,14 +58,13 @@ public class GameModel {
         var item = Arrays.stream(items).filter(x -> x.position().equals(position)).findFirst();
 
         if (item.isPresent() && possibleMovement(item.get().position()).contains(position.getPosition(direction))) {
-            if (!(selectFrom(position) == item.get().position() && turn == item.get().type()))
+            if (!(/*selectFrom(position) == item.get().position() && */turn == item.get().type()))
                 throw new IllegalArgumentException();
 
             System.out.println("From: " + item.get());
 
             if (!(possibleMovement(item.get().position()).contains(selectTo(position.getPosition(direction)))))
                 throw new IllegalArgumentException();
-
             System.out.println("To:" + item.get());
 
             item.get().moveTo(direction);

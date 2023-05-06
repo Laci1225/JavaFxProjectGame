@@ -1,8 +1,10 @@
 package GUI;
 
 
+import Model.Direction;
 import Model.GameModel;
 import Model.ItemType;
+import Model.Position;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -13,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
+
 
 
 public class ProjectGameController {
@@ -32,10 +35,44 @@ public class ProjectGameController {
         Node node = (Node) event.getSource();
         var row = GridPane.getRowIndex(node);
         var col = GridPane.getColumnIndex(node);
+        var selectedPosition = new Position(row, col);
         if (node instanceof Rectangle)
             System.out.println("A rectangle is in (" + row + "," + col + ")");
         else if (node instanceof Circle)
             System.out.println("A circle is in (" + row + "," + col + ")");
+        handleClickOnNode(selectedPosition, node);
+    }
+
+    Position selected;
+    Node selectedCircle;
+
+    private void handleClickOnNode(Position position, Node node) {
+
+        if (node instanceof Circle) {
+            if (gameModel.turn.hexValue().equals(((Circle) node).getFill().toString())) {
+                selected = position;
+                selectedCircle = node;
+                gameModel.selectFrom(selected);
+            } else
+                System.out.println("Not its turn hV:" + gameModel.turn.hexValue() + "C:" + ((Circle) node).getFill().toString());
+        } else if (gameModel.selectFrom && node instanceof Rectangle) {
+            if (gameModel.possibleMovement(selected).contains(position)) {
+
+                var direct = Direction.of(position.row() - selected.row(),
+                        position.col() - selected.col());
+
+                gameBoard.getChildren().remove(selectedCircle);
+                gameBoard.add(selectedCircle, position.col(), position.row());
+                gameModel.moveItem(selected, direct);
+
+                if (gameModel.checkTargetState().getValue())
+                    System.out.println("Won: " + gameModel.checkTargetState().getKey());
+            } else {
+                System.out.println("Illegal step");
+            }
+        }
+
+        //handleGameOver();
     }
 
     private void initRectangle() {

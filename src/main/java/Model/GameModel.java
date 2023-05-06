@@ -28,23 +28,19 @@ public class GameModel {
     public GameModel(Item... items) {
         GameModel.items = items;
     }
-
-    Position from;
-    Position to;
+    
     ItemType turn = ItemType.BLUE;
 
     private Position selectFrom(Position p) {
         if (isOnTable(p) && !isNotOccupied(p)) {
-            from = p;
-            return from;
+            return p;
         } else throw new IllegalArgumentException("Not an Item");
     }
 
     private Position selectTo(Position p) {
         if (isOnTable(p) && isNotOccupied(p)) {
-            to = p;
             turn = turn.switchColor();
-            return to;
+            return p;
         } else throw new IllegalArgumentException("Not an empty Square");
     }
 

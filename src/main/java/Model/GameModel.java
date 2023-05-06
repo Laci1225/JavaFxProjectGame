@@ -8,9 +8,14 @@ import java.util.List;
 
 public class GameModel {
 
-    private final int ROW_SIZE = 5;
-    private final int COL_SIZE = 4;
+    public final int ROW_SIZE = 5;
+    public final int COL_SIZE = 4;
+
     protected static Item[] items;
+
+    public Item[] getItems() {
+        return items;
+    }
 
     public GameModel() {
         this(
@@ -28,7 +33,7 @@ public class GameModel {
     public GameModel(Item... items) {
         GameModel.items = items;
     }
-    
+
     ItemType turn = ItemType.BLUE;
 
     private Position selectFrom(Position p) {

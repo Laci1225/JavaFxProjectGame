@@ -1,97 +1,89 @@
 package GUI;
 
 
+import Model.GameModel;
+import Model.ItemType;
 import javafx.fxml.FXML;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 
 
 public class ProjectGameController {
 
     @FXML
-    Rectangle r00;
-    @FXML
-    Rectangle r01;
-    @FXML
-    Rectangle r02;
-    @FXML
-    Rectangle r03;
-    @FXML
-    Rectangle r10;
-    @FXML
-    Rectangle r11;
-    @FXML
-    Rectangle r12;
-    @FXML
-    Rectangle r13;
-    @FXML
-    Rectangle r20;
-    @FXML
-    Rectangle r21;
-    @FXML
-    Rectangle r22;
-    @FXML
-    Rectangle r23;
-    @FXML
-    Rectangle r30;
-    @FXML
-    Rectangle r31;
-    @FXML
-    Rectangle r32;
-    @FXML
-    Rectangle r33;
-    @FXML
-    Rectangle r40;
-    @FXML
-    Rectangle r41;
-    @FXML
-    Rectangle r42;
-    @FXML
-    Rectangle r43;
-
-
-    @FXML
     GridPane gameBoard;
-    @FXML
-    Circle blue1;
-    @FXML
-    Circle blue2;
-    @FXML
-    Circle blue3;
-    @FXML
-    Circle blue4;
-    @FXML
-    Circle red1;
-    @FXML
-    Circle red2;
-    @FXML
-    Circle red3;
-    @FXML
-    Circle red4;
+    GameModel gameModel = new GameModel();
+
     @FXML
     private void initialize() {
+        initRectangle();
         initCircle();
-        initSquares();
     }
 
-    private void handleMouseClick(MouseEvent mouseEvent) {
+    @FXML
+    private void handleMouseClick(MouseEvent event) {
+        Node node = (Node) event.getSource();
+        var row = GridPane.getRowIndex(node);
+        var col = GridPane.getColumnIndex(node);
+        if (node instanceof Rectangle)
+            System.out.println("A rectangle is in (" + row + "," + col + ")");
+        else if (node instanceof Circle)
+            System.out.println("A circle is in (" + row + "," + col + ")");
     }
 
-    private void initSquares() {
-        Rectangle[] rectangles = new Rectangle[]{r00, r01, r02, r03, r10, r11, r12, r13, r20, r21, r22, r23, r30, r31, r32, r33, r40, r41, r42, r43};
-        for (Rectangle rectangle : rectangles) {
-            rectangle.setOnMouseClicked(this::handleMouseClick);
+    private void initRectangle() {
+        for (int i = 0; i < gameModel.ROW_SIZE; i++) {
+            for (int j = 0; j < gameModel.COL_SIZE; j++) {
+                Rectangle r = createRectangle();
+                r.setWidth(gameBoard.getRowConstraints().get(i).getPrefHeight());
+                r.setHeight(gameBoard.getColumnConstraints().get(j).getPrefWidth());
+                gameBoard.add(r, i, j);
+                GridPane.setRowIndex(r, i);
+                GridPane.setColumnIndex(r, j);
+            }
         }
+    }
+
+    private Rectangle createRectangle() {
+        Rectangle rectangle = new Rectangle();
+        rectangle.setStroke(Color.BLACK);
+        rectangle.setStrokeType(StrokeType.INSIDE);
+        rectangle.setFill(Color.WHITE);
+        rectangle.setOnMouseClicked(this::handleMouseClick);
+        return rectangle;
     }
 
     private void initCircle() {
+        for (int i = 0; i < (gameModel.ROW_SIZE - 1) * 2; i++) {
+            Circle circle = createCircle(gameModel.getItems()[i].type());
+            var row = gameModel.getItems()[i].position().row();
+            var col = gameModel.getItems()[i].position().col();
+            gameBoard.add(circle, row, col);
 
-        Circle[] circles = new Circle[]{blue1, blue2, blue3, blue4, red1, red2, red3, red4};
-        for (Circle circle : circles) {
-            circle.setOnMouseClicked(this::handleMouseClick);
+            GridPane.setRowIndex(circle, row);
+            GridPane.setColumnIndex(circle, col);
+            GridPane.setHalignment(circle, HPos.CENTER);
+            GridPane.setValignment(circle, VPos.CENTER);
         }
+    }
+
+    private Circle createCircle(ItemType color) {
+        Circle circle = new Circle();
+        switch (color) {
+            case BLUE -> circle.setFill(Color.BLUE);
+            case RED -> circle.setFill(Color.RED);
+        }
+        circle.setRadius(45);
+        circle.setOnMouseClicked(this::handleMouseClick);
+        //circle.setMouseTransparent(true);
+        return circle;
     }
 
 }

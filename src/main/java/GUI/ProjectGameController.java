@@ -17,7 +17,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 
 
-
 public class ProjectGameController {
 
     @FXML
@@ -44,20 +43,24 @@ public class ProjectGameController {
     }
 
     Position selected;
-    Node selectedCircle;
+    Circle selectedCircle;
 
     private void handleClickOnNode(Position position, Node node) {
 
         if (node instanceof Circle) {
             if (gameModel.turn.hexValue().equals(((Circle) node).getFill().toString())) {
                 selected = position;
-                selectedCircle = node;
+                selectedCircle = (Circle) node;
+
+                selectedCircle.setStroke(Color.BLACK);
+                setStrokeWidth(selectedCircle);
+
                 gameModel.selectFrom(selected);
             } else
                 System.out.println("Not its turn hV:" + gameModel.turn.hexValue() + "C:" + ((Circle) node).getFill().toString());
         } else if (gameModel.selectFrom && node instanceof Rectangle) {
             if (gameModel.possibleMovement(selected).contains(position)) {
-
+                resetAllStrokeWidthToDefault();
                 var direct = Direction.of(position.row() - selected.row(),
                         position.col() - selected.col());
 
@@ -74,6 +77,27 @@ public class ProjectGameController {
 
         //handleGameOver();
     }
+
+    private void resetAllStrokeWidthToDefault() {
+        for (Node node : gameBoard.getChildren()) {
+            if (node instanceof Circle) {
+                ((Circle) node).setStrokeWidth(0);
+            }
+        }
+    }
+
+    private void setStrokeWidth(Node node) {
+        for (Node child : gameBoard.getChildren()) {
+            if (child instanceof Circle) {
+                if (((Circle) child).getStrokeWidth() != 0) {
+                    resetAllStrokeWidthToDefault();
+                    break;
+                }
+            }
+        }
+        ((Circle) node).setStrokeWidth(2);
+    }
+
 
     private void initRectangle() {
         for (int i = 0; i < gameModel.ROW_SIZE; i++) {

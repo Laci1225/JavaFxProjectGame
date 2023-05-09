@@ -5,10 +5,12 @@ import Model.Direction;
 import Model.GameModel;
 import Model.ItemType;
 import Model.Position;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -75,7 +77,16 @@ public class ProjectGameController {
             }
         }
 
-        //handleGameOver();
+        handleGameOver();
+    }
+
+    private void handleGameOver() {
+        if (gameModel.checkTargetState().getValue()) {
+            var alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText(gameModel.checkTargetState().getKey()+" won the game");
+            alert.showAndWait();
+            Platform.exit();
+        }
     }
 
     private void resetAllStrokeWidthToDefault() {

@@ -38,6 +38,13 @@ public class ProjectGameController {
         var col = GridPane.getColumnIndex(node);
         var selectedPosition = new Position(row, col);
         if (node instanceof Rectangle)
+            for (var circle : gameBoard.getChildren()) {
+                if (circle instanceof Circle &&
+                        GridPane.getRowIndex(circle).equals(row) &&
+                        GridPane.getColumnIndex(circle).equals(col))
+                    node = circle;
+            }
+        if (node instanceof Rectangle)
             System.out.println("A rectangle is in (" + row + "," + col + ")");
         else if (node instanceof Circle)
             System.out.println("A circle is in (" + row + "," + col + ")");
@@ -83,7 +90,8 @@ public class ProjectGameController {
     private void handleGameOver() {
         if (gameModel.checkTargetState().getValue()) {
             var alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText(gameModel.checkTargetState().getKey()+" won the game");
+            alert.setHeaderText(gameModel.checkTargetState().getKey() + " won the game under "
+                    + ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1) + " step");
             alert.showAndWait();
             Platform.exit();
         }

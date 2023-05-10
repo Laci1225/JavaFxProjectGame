@@ -17,6 +17,8 @@ public class GameModel {
         return items;
     }
 
+    private int step = 0;
+
     public GameModel() {
         this(
                 new Item(ItemType.BLUE, new Position(0, 0)),
@@ -54,11 +56,11 @@ public class GameModel {
 
 
     public void moveItem(Position position, Direction direction) {
-        //System.out.println(position);
+        step++;
         var item = Arrays.stream(items).filter(x -> x.position().equals(position)).findFirst();
 
-        if (item.isPresent() && possibleMovement(item.get().position()).contains(position.getPosition(direction))) {
-            if (!(/*selectFrom(position) == item.get().position() && */turn == item.get().type()))
+        if (item.isPresent() && possibleMovement(item.get().position()).contains(selectFrom(position).getPosition(direction))) {
+            if (!(turn == item.get().type()))
                 throw new IllegalArgumentException();
 
             System.out.println("From: " + item.get());
@@ -182,5 +184,9 @@ public class GameModel {
             sb.append("\n");
         }
         return sb.toString();
+    }
+
+    public int getStep() {
+        return step;
     }
 }

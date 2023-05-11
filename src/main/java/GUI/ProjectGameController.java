@@ -5,6 +5,10 @@ import Model.Direction;
 import Model.GameModel;
 import Model.ItemType;
 import Model.Position;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,8 +26,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
+import leaderboard.Leaderboard;
 
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 
@@ -101,18 +110,59 @@ public class ProjectGameController {
 
     private void handleGameOver() {
         if (gameModel.checkTargetState().getValue()) {
-
+            String winner = (gameModel.checkTargetState().getKey().equals(ItemType.BLUE) ? player1 : player2);
+            int winnerStep = ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1);
             var alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText((gameModel.checkTargetState().getKey().equals(ItemType.BLUE) ?
-                    player1 : player2) + " won the game under " +
-                    ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1) + " step");
+            alert.setHeaderText(winner + " won the game under " + winnerStep + " step");
             alert.showAndWait();
             Stage stage = (Stage) (gameBoard.getScene().getWindow());
             stage.close();
+            writeWinnerToJson(winner, winnerStep);
+            restartGame();
         }
     }
 
+    private void writeWinnerToJson(String winner, int winnerStep) {
+        ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        ;
+        try {
 
+            var leaderboard = new Leaderboard();
+            LocalDateTime localDateTime = LocalDateTime.now();
+            leaderboard.setStart(objectMapper.writeValueAsString(
+                    localDateTime.getYear() + " " + localDateTime.getMonthValue() + " " +
+                            localDateTime.getDayOfMonth() + " " + localDateTime.getHour() + " " +
+                            localDateTime.getMinute() + " " + localDateTime.getSecond()));
+            leaderboard.setWinner(winner);
+            leaderboard.setStep(winnerStep);
+            leaderboard.setEnd(objectMapper.writeValueAsString(
+                    localDateTime.getYear() + " " + localDateTime.getMonthValue() + " " +
+                            localDateTime.getDayOfMonth() + " " + localDateTime.getHour() + " " +
+                            localDateTime.getMinute() + " " + localDateTime.getSecond()));
+
+            //System.out.println(objectMapper.writeValueAsString(leaderboard));
+
+
+            var writer = new FileWriter("leaderboard.json");
+            objectMapper.writeValue(writer, leaderboard);
+
+            System.out.println(objectMapper.readValue(new FileReader("leaderboard.json"), Leaderboard.class));
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void restartGame() {
+        OpeningScreenApplication openingScreenApplication = new OpeningScreenApplication();
+        try {
+            openingScreenApplication.start(new Stage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private void resetAllStrokeWidthToDefault() {
         for (Node node : gameBoard.getChildren()) {

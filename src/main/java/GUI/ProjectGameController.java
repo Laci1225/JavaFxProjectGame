@@ -7,16 +7,24 @@ import Model.ItemType;
 import Model.Position;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.util.Objects;
 
 
 public class ProjectGameController {
@@ -24,6 +32,10 @@ public class ProjectGameController {
     @FXML
     GridPane gameBoard;
     GameModel gameModel = new GameModel();
+
+
+    private String player1;
+    private String player2;
 
     @FXML
     private void initialize() {
@@ -89,13 +101,18 @@ public class ProjectGameController {
 
     private void handleGameOver() {
         if (gameModel.checkTargetState().getValue()) {
+
             var alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText(gameModel.checkTargetState().getKey() + " won the game under "
-                    + ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1) + " step");
+            alert.setHeaderText((gameModel.checkTargetState().getKey().equals(ItemType.BLUE) ?
+                    player1 : player2) + " won the game under " +
+                    ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1) + " step");
             alert.showAndWait();
-            Platform.exit();
+            Stage stage = (Stage) (gameBoard.getScene().getWindow());
+            stage.close();
         }
     }
+
+
 
     private void resetAllStrokeWidthToDefault() {
         for (Node node : gameBoard.getChildren()) {
@@ -166,4 +183,11 @@ public class ProjectGameController {
         return circle;
     }
 
+    public void setPlayer1Name(String text) {
+        player1 = text;
+    }
+
+    public void setPlayer2Name(String text) {
+        player2 = text;
+    }
 }

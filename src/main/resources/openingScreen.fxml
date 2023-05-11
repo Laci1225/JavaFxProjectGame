@@ -2,22 +2,33 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="GUI.OpeningScreenController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.OpeningScreenController">
    <children>
       <Label alignment="CENTER" contentDisplay="CENTER" layoutX="117.0" layoutY="58.0" prefHeight="26.0" prefWidth="366.0" text="Project Boardgame">
          <font>
             <Font size="36.0" />
          </font>
       </Label>
-      <Button layoutX="232.0" layoutY="238.0" mnemonicParsing="false" onAction="#nextStage" text="Start game">
+      <Button layoutX="232.0" layoutY="315.0" mnemonicParsing="false" onAction="#nextStage" text="Start game">
          <font>
             <Font size="22.0" />
          </font>
       </Button>
+      <Label alignment="CENTER" layoutX="117.0" layoutY="160.0" text="Player 1">
+         <font>
+            <Font size="28.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="386.0" layoutY="160.0" text="Player 2">
+         <font>
+            <Font size="28.0" />
+         </font>
+      </Label>
+      <TextField fx:id="player1" layoutX="91.0" layoutY="250.0" promptText="Enter Player 1's name" />
+      <TextField fx:id="player2" layoutX="360.0" layoutY="250.0" promptText="Enter Player 2's name" />
    </children>
 </AnchorPane>

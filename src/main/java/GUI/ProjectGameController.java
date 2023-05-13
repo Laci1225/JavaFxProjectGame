@@ -5,7 +5,6 @@ import Model.Direction;
 import Model.GameModel;
 import Model.ItemType;
 import Model.Position;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -21,27 +20,32 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
+import leaderboard.IdAndLeaderboardList;
 import leaderboard.Leaderboard;
+import lombok.Setter;
 import org.tinylog.Logger;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-
 
 public class ProjectGameController {
 
-    LocalDateTime startTime = LocalDateTime.now();
+    private final LocalDateTime startTime = LocalDateTime.now();
     @FXML
-    GridPane gameBoard;
-    GameModel gameModel = new GameModel();
+    private GridPane gameBoard;
+    private final GameModel gameModel = new GameModel();
 
-    private String player1;
-    private String player2;
+    private Position selected;
+
+    private Circle selectedCircle;
+
+    @Setter
+    private String player1Name;
+    @Setter
+    private String player2Name;
 
     @FXML
     private void initialize() {
@@ -55,22 +59,24 @@ public class ProjectGameController {
         var row = GridPane.getRowIndex(node);
         var col = GridPane.getColumnIndex(node);
         var selectedPosition = new Position(row, col);
-        if (node instanceof Rectangle)
+        if (node instanceof Rectangle) {
+            /*var circle = gameBoard.getChildren().stream().filter(child -> (child instanceof Circle &&
+                    GridPane.getRowIndex(child).equals(row) &&
+                    GridPane.getColumnIndex(child).equals(col))).findFirst();
+            if (circle.isPresent())
+                node = circle.get();*/
             for (var circle : gameBoard.getChildren()) {
                 if (circle instanceof Circle &&
                         GridPane.getRowIndex(circle).equals(row) &&
-                        GridPane.getColumnIndex(circle).equals(col))
+                        GridPane.getColumnIndex(circle).equals(col)) {
                     node = circle;
+                    break;
+                }
             }
-        /*if (node instanceof Rectangle)
-            Logger.debug("A rectangle is in ({},{})", row, col);
-        else if (node instanceof Circle)
-            Logger.debug("A circle is in ({},{})", row, col);*/
+        }
         handleClickOnNode(selectedPosition, node);
     }
 
-    Position selected;
-    Circle selectedCircle;
 
     private void handleClickOnNode(Position position, Node node) {
 
@@ -112,7 +118,7 @@ public class ProjectGameController {
         if (gameModel.checkTargetState().getValue()) {
             Logger.info("{} has won the game", gameModel.checkTargetState().getKey());
 
-            String winner = (gameModel.checkTargetState().getKey().equals(ItemType.BLUE) ? player1 : player2);
+            String winner = (gameModel.checkTargetState().getKey().equals(ItemType.BLUE) ? player1Name : player2Name);
             int winnerStep = ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1);
             var alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText(winner + " won the game under " + winnerStep + " step");
@@ -124,57 +130,72 @@ public class ProjectGameController {
         }
     }
 
+    private final static String leaderboardFileName = "leaderboard.json";
+
     private void writeWinnerToJson(String winner, int winnerStep) {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-                .registerModule(new JavaTimeModule())
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+                .registerModule(new JavaTimeModule());
+        LocalDateTime finnishTime = LocalDateTime.now();
         try {
-            long id;
-            LocalDateTime finnishTime = LocalDateTime.now();
-
-            List<Leaderboard> leaderboardList;
-            File file = new File("leaderboard.json");
-            if (file.length() == 0) {
-                leaderboardList = new ArrayList<>();
-                id = 0L;
-            } else {
-                leaderboardList = objectMapper.readValue(new FileReader("leaderboard.json"),
-                        objectMapper.getTypeFactory().constructCollectionType(List.class, Leaderboard.class));
-                if (leaderboardList.stream().map(Leaderboard::getId).max(Long::compareTo).isPresent()) {
-                    id = leaderboardList.stream().map(Leaderboard::getId).max(Long::compareTo).get() + 1;
-                }
-                else throw new IllegalArgumentException("Id not found");
-            }
-            var leaderboard = leaderboardBuilder(objectMapper, id, startTime, winner, winnerStep, finnishTime);
-            var sameName = leaderboardList.stream().filter(leaderboard1 -> leaderboard1.getWinner().equals(winner)).findFirst();
-            if (sameName.isPresent()) {
-                if (sameName.get().getStep() > winnerStep) {
-                    leaderboardList.remove(sameName.get());
-                    leaderboardList.add(leaderboard);
-                }
-            } else
-                leaderboardList.add(leaderboard);
-
-            objectMapper.writeValue(new FileWriter("leaderboard.json"), leaderboardList);
+            var idAndList = initIdAndList(objectMapper);
+            long id = idAndList.getId();
+            List<Leaderboard> leaderboardList = idAndList.getLeaderboard();
+            var leaderboard = leaderboardBuilder(id, startTime, winner, winnerStep, finnishTime);
+            addLeaderboardToList(leaderboardList, leaderboard, winner, winnerStep);
+            var orderedList = orderLeaderboardListByStepThenByDuration(leaderboardList);
+            objectMapper.writeValue(new FileWriter(leaderboardFileName), orderedList);
+            Logger.info("Winner has written to {}", leaderboardFileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Leaderboard leaderboardBuilder(ObjectMapper objectMapper, Long id, LocalDateTime startTime, String winner,
-                                           int winnerStep, LocalDateTime finnishTime) throws JsonProcessingException {
+    private List<Leaderboard> orderLeaderboardListByStepThenByDuration(List<Leaderboard> leaderboardList) {
+        return leaderboardList.stream().sorted(Comparator.comparing(
+                Leaderboard::getStep).thenComparing(Leaderboard::getDuration)).toList();
+    }
+
+    private void addLeaderboardToList(List<Leaderboard> leaderboardList, Leaderboard leaderboard, String winner, int winnerStep) {
+        var sameName = leaderboardList.stream().
+                filter(leaderboard1 -> leaderboard1.getWinner().equals(winner)).findFirst();
+        if (sameName.isPresent()) {
+            if (sameName.get().getStep() > winnerStep) {
+                leaderboardList.remove(sameName.get());
+                leaderboardList.add(leaderboard);
+            }
+        } else
+            leaderboardList.add(leaderboard);
+    }
+
+    private IdAndLeaderboardList initIdAndList(ObjectMapper objectMapper) throws IOException {
+        long id;
+        List<Leaderboard> leaderboardList;
+        File file = new File(leaderboardFileName);
+        if (file.length() == 0) {
+            leaderboardList = new ArrayList<>();
+            id = 0L;
+        } else {
+            leaderboardList = objectMapper.readValue(new FileReader(leaderboardFileName),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, Leaderboard.class));
+            var maxId = leaderboardList.stream().map(Leaderboard::getId).max(Long::compareTo);
+            if (maxId.isPresent()) {
+                id = maxId.get() + 1;
+            } else throw new IllegalArgumentException("Id not found"); //never happens
+        }
+        return new IdAndLeaderboardList(id, leaderboardList);
+    }
+
+    private Leaderboard leaderboardBuilder(Long id, LocalDateTime startTime, String winner, int winnerStep, LocalDateTime finnishTime) {
         return Leaderboard.builder()
                 .id(id)
-                .start(objectMapper.writeValueAsString(
-                        startTime.getYear() + " " + startTime.getMonthValue() + " " +
-                                startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
-                                startTime.getMinute() + " " + startTime.getSecond()))
+                .start(startTime.getYear() + " " + startTime.getMonthValue() + " " +
+                        startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
+                        startTime.getMinute() + " " + startTime.getSecond())
                 .winner(winner)
                 .step(winnerStep)
-                .end(objectMapper.writeValueAsString(
-                        finnishTime.getYear() + " " + finnishTime.getMonthValue() + " " +
-                                startTime.getDayOfMonth() + " " + finnishTime.getHour() + " " +
-                                finnishTime.getMinute() + " " + finnishTime.getSecond()))
+                .end(finnishTime.getYear() + " " + finnishTime.getMonthValue() + " " +
+                        startTime.getDayOfMonth() + " " + finnishTime.getHour() + " " +
+                        finnishTime.getMinute() + " " + finnishTime.getSecond())
                 .duration((finnishTime.getHour() * 3600 + finnishTime.getMinute() * 60 + finnishTime.getSecond())
                         - (startTime.getHour() * 3600 + startTime.getMinute() * 60 + startTime.getSecond()))
                 .build();
@@ -256,15 +277,6 @@ public class ProjectGameController {
         }
         circle.setRadius(45);
         circle.setOnMouseClicked(this::handleMouseClick);
-        //circle.setMouseTransparent(true);
         return circle;
-    }
-
-    public void setPlayer1Name(String text) {
-        player1 = text;
-    }
-
-    public void setPlayer2Name(String text) {
-        player2 = text;
     }
 }

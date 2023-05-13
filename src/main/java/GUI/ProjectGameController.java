@@ -5,20 +5,14 @@ import Model.Direction;
 import Model.GameModel;
 import Model.ItemType;
 import Model.Position;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -31,13 +25,13 @@ import leaderboard.Leaderboard;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.List;
 
 
 public class ProjectGameController {
 
+    LocalDateTime startTime = LocalDateTime.now();
     @FXML
     GridPane gameBoard;
     GameModel gameModel = new GameModel();
@@ -126,29 +120,30 @@ public class ProjectGameController {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        ;
+
         try {
+            LocalDateTime finnishTime = LocalDateTime.now();
 
-            var leaderboard = new Leaderboard();
-            LocalDateTime localDateTime = LocalDateTime.now();
-            leaderboard.setStart(objectMapper.writeValueAsString(
-                    localDateTime.getYear() + " " + localDateTime.getMonthValue() + " " +
-                            localDateTime.getDayOfMonth() + " " + localDateTime.getHour() + " " +
-                            localDateTime.getMinute() + " " + localDateTime.getSecond()));
-            leaderboard.setWinner(winner);
-            leaderboard.setStep(winnerStep);
-            leaderboard.setEnd(objectMapper.writeValueAsString(
-                    localDateTime.getYear() + " " + localDateTime.getMonthValue() + " " +
-                            localDateTime.getDayOfMonth() + " " + localDateTime.getHour() + " " +
-                            localDateTime.getMinute() + " " + localDateTime.getSecond()));
+            var leaderboard = Leaderboard.builder()
+                    .start(objectMapper.writeValueAsString(
+                            startTime.getYear() + " " + startTime.getMonthValue() + " " +
+                                    startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
+                                    startTime.getMinute() + " " + startTime.getSecond()))
+                    .winner(winner)
+                    .step(winnerStep)
+                    .end(objectMapper.writeValueAsString(
+                            startTime.getYear() + " " + startTime.getMonthValue() + " " +
+                                    startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
+                                    startTime.getMinute() + " " + startTime.getSecond()))
+                    .duration((finnishTime.getHour() * 3600 + finnishTime.getMinute() * 60 + finnishTime.getSecond())
+                            - (startTime.getHour() * 3600 + startTime.getMinute() * 60 + startTime.getSecond()))
+                    .build();
 
-            //System.out.println(objectMapper.writeValueAsString(leaderboard));
+            List<Leaderboard> a = objectMapper.readValue(new FileReader("src/leaderboard.json"),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, Leaderboard.class));
+            a.add(leaderboard);
+            objectMapper.writeValue(new FileWriter("src/leaderboard.json"), a);
 
-
-            var writer = new FileWriter("leaderboard.json");
-            objectMapper.writeValue(writer, leaderboard);
-
-            System.out.println(objectMapper.readValue(new FileReader("leaderboard.json"), Leaderboard.class));
 
         } catch (IOException e) {
             throw new RuntimeException(e);

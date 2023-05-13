@@ -1,6 +1,5 @@
 package GUI;
 
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -19,14 +19,6 @@ public class OpeningScreenController {
     private TextField player1;
     @FXML
     private TextField player2;
-
-    public TextField getPlayer1() {
-        return player1;
-    }
-
-    public TextField getPlayer2() {
-        return player2;
-    }
 
     public void nextStage(ActionEvent actionEvent) {
         if (isPlayersNameGiven()) {
@@ -40,6 +32,11 @@ public class OpeningScreenController {
                 stage.setScene(new Scene(root));
                 stage.setTitle("JavaFX Board Game Example");
                 stage.show();
+
+                Logger.info("Player 1's name is set to {}", player1.getText());
+                Logger.info("Player 2's name is set to {}", player2.getText());
+                Logger.info("Loading game scene");
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -47,12 +44,13 @@ public class OpeningScreenController {
             var alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText("Not all names are given");
             alert.showAndWait();
+            Logger.warn("Not all names are given");
         }
     }
 
     public boolean isPlayersNameGiven() {
         //System.out.println(player1.getText());
         //System.out.println(player2.getText());
-        return !(player1.getText().isEmpty() && player2.getText().isEmpty());
+        return !(player1.getText().isEmpty() || player2.getText().isEmpty());
     }
 }

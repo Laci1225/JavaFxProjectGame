@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -18,6 +19,6 @@ public class OpeningScreenApplication extends Application {
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
-
+        Logger.info("Starting application");
     }
 }

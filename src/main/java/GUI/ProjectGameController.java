@@ -5,6 +5,7 @@ import Model.Direction;
 import Model.GameModel;
 import Model.ItemType;
 import Model.Position;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -21,11 +22,14 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
 import leaderboard.Leaderboard;
+import org.tinylog.Logger;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -35,7 +39,6 @@ public class ProjectGameController {
     @FXML
     GridPane gameBoard;
     GameModel gameModel = new GameModel();
-
 
     private String player1;
     private String player2;
@@ -59,10 +62,10 @@ public class ProjectGameController {
                         GridPane.getColumnIndex(circle).equals(col))
                     node = circle;
             }
-        if (node instanceof Rectangle)
-            System.out.println("A rectangle is in (" + row + "," + col + ")");
+        /*if (node instanceof Rectangle)
+            Logger.debug("A rectangle is in ({},{})", row, col);
         else if (node instanceof Circle)
-            System.out.println("A circle is in (" + row + "," + col + ")");
+            Logger.debug("A circle is in ({},{})", row, col);*/
         handleClickOnNode(selectedPosition, node);
     }
 
@@ -80,8 +83,11 @@ public class ProjectGameController {
                 setStrokeWidth(selectedCircle);
 
                 gameModel.selectFrom(selected);
+                Logger.debug("From: ({},{})", selected.col(), selected.row());
+
             } else
-                System.out.println("Not its turn hV:" + gameModel.turn.hexValue() + "C:" + ((Circle) node).getFill().toString());
+                Logger.warn("Not its turn hexValue: {} Circle's hexValue: {}",
+                        gameModel.turn.hexValue(), ((Circle) node).getFill().toString());
         } else if (gameModel.selectFrom && node instanceof Rectangle) {
             if (gameModel.possibleMovement(selected).contains(position)) {
                 resetAllStrokeWidthToDefault();
@@ -90,12 +96,12 @@ public class ProjectGameController {
 
                 gameBoard.getChildren().remove(selectedCircle);
                 gameBoard.add(selectedCircle, position.col(), position.row());
-                gameModel.moveItem(selected, direct);
 
-                if (gameModel.checkTargetState().getValue())
-                    System.out.println("Won: " + gameModel.checkTargetState().getKey());
+                gameModel.moveItem(selected, direct);
+                Logger.debug("To: ({},{})", position.col(), position.row());
+
             } else {
-                System.out.println("Illegal step");
+                Logger.error("Illegal step");
             }
         }
 
@@ -104,6 +110,8 @@ public class ProjectGameController {
 
     private void handleGameOver() {
         if (gameModel.checkTargetState().getValue()) {
+            Logger.info("{} has won the game", gameModel.checkTargetState().getKey());
+
             String winner = (gameModel.checkTargetState().getKey().equals(ItemType.BLUE) ? player1 : player2);
             int winnerStep = ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1);
             var alert = new Alert(Alert.AlertType.INFORMATION);
@@ -120,40 +128,64 @@ public class ProjectGameController {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
         try {
+            long id;
             LocalDateTime finnishTime = LocalDateTime.now();
 
-            var leaderboard = Leaderboard.builder()
-                    .start(objectMapper.writeValueAsString(
-                            startTime.getYear() + " " + startTime.getMonthValue() + " " +
-                                    startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
-                                    startTime.getMinute() + " " + startTime.getSecond()))
-                    .winner(winner)
-                    .step(winnerStep)
-                    .end(objectMapper.writeValueAsString(
-                            startTime.getYear() + " " + startTime.getMonthValue() + " " +
-                                    startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
-                                    startTime.getMinute() + " " + startTime.getSecond()))
-                    .duration((finnishTime.getHour() * 3600 + finnishTime.getMinute() * 60 + finnishTime.getSecond())
-                            - (startTime.getHour() * 3600 + startTime.getMinute() * 60 + startTime.getSecond()))
-                    .build();
+            List<Leaderboard> leaderboardList;
+            File file = new File("leaderboard.json");
+            if (file.length() == 0) {
+                leaderboardList = new ArrayList<>();
+                id = 0L;
+            } else {
+                leaderboardList = objectMapper.readValue(new FileReader("leaderboard.json"),
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, Leaderboard.class));
+                if (leaderboardList.stream().map(Leaderboard::getId).max(Long::compareTo).isPresent()) {
+                    id = leaderboardList.stream().map(Leaderboard::getId).max(Long::compareTo).get() + 1;
+                }
+                else throw new IllegalArgumentException("Id not found");
+            }
+            var leaderboard = leaderboardBuilder(objectMapper, id, startTime, winner, winnerStep, finnishTime);
+            var sameName = leaderboardList.stream().filter(leaderboard1 -> leaderboard1.getWinner().equals(winner)).findFirst();
+            if (sameName.isPresent()) {
+                if (sameName.get().getStep() > winnerStep) {
+                    leaderboardList.remove(sameName.get());
+                    leaderboardList.add(leaderboard);
+                }
+            } else
+                leaderboardList.add(leaderboard);
 
-            List<Leaderboard> a = objectMapper.readValue(new FileReader("src/leaderboard.json"),
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, Leaderboard.class));
-            a.add(leaderboard);
-            objectMapper.writeValue(new FileWriter("src/leaderboard.json"), a);
-
-
+            objectMapper.writeValue(new FileWriter("leaderboard.json"), leaderboardList);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    private Leaderboard leaderboardBuilder(ObjectMapper objectMapper, Long id, LocalDateTime startTime, String winner,
+                                           int winnerStep, LocalDateTime finnishTime) throws JsonProcessingException {
+        return Leaderboard.builder()
+                .id(id)
+                .start(objectMapper.writeValueAsString(
+                        startTime.getYear() + " " + startTime.getMonthValue() + " " +
+                                startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
+                                startTime.getMinute() + " " + startTime.getSecond()))
+                .winner(winner)
+                .step(winnerStep)
+                .end(objectMapper.writeValueAsString(
+                        finnishTime.getYear() + " " + finnishTime.getMonthValue() + " " +
+                                startTime.getDayOfMonth() + " " + finnishTime.getHour() + " " +
+                                finnishTime.getMinute() + " " + finnishTime.getSecond()))
+                .duration((finnishTime.getHour() * 3600 + finnishTime.getMinute() * 60 + finnishTime.getSecond())
+                        - (startTime.getHour() * 3600 + startTime.getMinute() * 60 + startTime.getSecond()))
+                .build();
+    }
+
+
     private void restartGame() {
         OpeningScreenApplication openingScreenApplication = new OpeningScreenApplication();
         try {
             openingScreenApplication.start(new Stage());
+            Logger.info("New game started");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 @Builder
 public class Leaderboard {
-
+    private Long id;
     private String start;
     private String winner;
     private Integer step;
@@ -17,11 +17,13 @@ public class Leaderboard {
     private Integer duration;
 
     @JsonCreator
-    public Leaderboard(@JsonProperty("start") String start,
+    public Leaderboard(@JsonProperty("id") Long id,
+                       @JsonProperty("start") String start,
                        @JsonProperty("winner") String winner,
-                       @JsonProperty("step") int step,
+                       @JsonProperty("step") Integer step,
                        @JsonProperty("end") String end,
                        @JsonProperty("duration") Integer duration) {
+        this.id = id;
         this.start = start;
         this.winner = winner;
         this.step = step;

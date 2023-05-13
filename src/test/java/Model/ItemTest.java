@@ -22,8 +22,11 @@ class ItemTest {
         assertNotEquals(new Position(0,1), item.position());
         assertEquals(new Position(1,1), item.position());
 
+        item.moveTo(Direction.LEFT);
+        assertEquals(new Position(1, 0),item.position());
+
         item.moveTo(Direction.RIGHT);
-        assertEquals(new Position(1,2), item.position());
+        assertEquals(new Position(1,1), item.position());
     }
     @Test
     void testToString() {

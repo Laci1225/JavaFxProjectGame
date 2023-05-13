@@ -1,22 +1,19 @@
 package Model;
 
 import javafx.util.Pair;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Getter
 public class GameModel {
 
     public final int ROW_SIZE = 5;
     public final int COL_SIZE = 4;
 
-    protected static Item[] items;
-
-    public Item[] getItems() {
-        return items;
-    }
-
+    private final Item[] items;
     private int step = 0;
 
     public GameModel() {
@@ -33,11 +30,16 @@ public class GameModel {
     }
 
     public GameModel(Item... items) {
-        GameModel.items = items;
+        this.items = items;
     }
 
-    public ItemType turn = ItemType.BLUE;
-    public boolean selectFrom;
+    private ItemType turn = ItemType.BLUE;
+
+    public void setTurn(ItemType turn) {
+        this.turn = turn;
+    }
+
+    private boolean selectFrom;
 
     public Position selectFrom(Position p) {
         if (isOnTable(p) && !isNotOccupied(p)) {
@@ -63,11 +65,8 @@ public class GameModel {
             if (!(turn == item.get().type()))
                 throw new IllegalArgumentException();
 
-            System.out.println("From: " + item.get());
-
             if (!(possibleMovement(item.get().position()).contains(selectTo(position.getPosition(direction)))))
                 throw new IllegalArgumentException();
-            System.out.println("To:" + item.get());
 
             item.get().moveTo(direction);
         } else throw new IllegalArgumentException("Not a step/Not an item");
@@ -81,16 +80,10 @@ public class GameModel {
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 2; j++) {
                 if (grid[i][j].equals(grid[i][j + 1]) && grid[i][j].equals(grid[i][j + 2])) {
-                    if (grid[i][j].equals(blue)
-                            && grid[i][j + 1].equals(blue)
-                            && grid[i][j + 2].equals(blue))
+                    if (grid[i][j].equals(blue) && grid[i][j + 1].equals(blue) && grid[i][j + 2].equals(blue))
                         return new Pair<>(ItemType.BLUE, true);
-
-                    else if (grid[i][j].equals(grid[i][j + 1]) && grid[i][j].equals(grid[i][j + 2]))
-                        if (grid[i][j].equals(red)
-                                && grid[i][j + 1].equals(red)
-                                && grid[i][j + 2].equals(red))
-                            return new Pair<>(ItemType.RED, true);
+                    if (grid[i][j].equals(red) && grid[i][j + 1].equals(red) && grid[i][j + 2].equals(red))
+                        return new Pair<>(ItemType.RED, true);
                 }
             }
         }
@@ -113,7 +106,6 @@ public class GameModel {
                         return new Pair<>(ItemType.BLUE, true);
                     else if (grid[i][j].equals(red) && grid[i + 1][j + 1].equals(red) && grid[i + 2][j + 2].equals(red))
                         return new Pair<>(ItemType.RED, true);
-
                 }
             }
         }
@@ -184,9 +176,5 @@ public class GameModel {
             sb.append("\n");
         }
         return sb.toString();
-    }
-
-    public int getStep() {
-        return step;
     }
 }

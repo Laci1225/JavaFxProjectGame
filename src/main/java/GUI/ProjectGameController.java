@@ -75,7 +75,7 @@ public class ProjectGameController {
     private void handleClickOnNode(Position position, Node node) {
 
         if (node instanceof Circle) {
-            if (gameModel.turn.hexValue().equals(((Circle) node).getFill().toString())) {
+            if (gameModel.getTurn().hexValue().equals(((Circle) node).getFill().toString())) {
                 selected = position;
                 selectedCircle = (Circle) node;
 
@@ -87,8 +87,8 @@ public class ProjectGameController {
 
             } else
                 Logger.warn("Not its turn hexValue: {} Circle's hexValue: {}",
-                        gameModel.turn.hexValue(), ((Circle) node).getFill().toString());
-        } else if (gameModel.selectFrom && node instanceof Rectangle) {
+                        gameModel.getTurn().hexValue(), ((Circle) node).getFill().toString());
+        } else if (gameModel.isSelectFrom() && node instanceof Rectangle) {
             if (gameModel.possibleMovement(selected).contains(position)) {
                 resetAllStrokeWidthToDefault();
                 var direct = Direction.of(position.row() - selected.row(),

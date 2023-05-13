@@ -60,48 +60,56 @@ class PositionTest {
     @Test
     void testSetToUp() {
         position.setTo(Direction.UP);
+
         assertPosition(0, 1, position);
     }
 
     @Test
     void testSetToRight() {
         position.setTo(Direction.RIGHT);
+
         assertPosition(1, 2, position);
     }
 
     @Test
     void testSetToDown() {
         position.setTo(Direction.DOWN);
+
         assertPosition(2, 1, position);
     }
 
     @Test
     void testSetToLeft() {
         position.setTo(Direction.LEFT);
+
         assertPosition(1, 0, position);
     }
 
     @Test
     void testSetUp() {
         position.setUp();
+
         assertPosition(0, 1, position);
     }
 
     @Test
     void testSetRight() {
         position.setRight();
+
         assertPosition(1, 2, position);
     }
 
     @Test
     void testSetDown() {
         position.setDown();
+
         assertPosition(2, 1, position);
     }
 
     @Test
     void testSetLeft() {
         position.setLeft();
+
         assertPosition(1, 0, position);
     }
 
@@ -128,8 +136,8 @@ class PositionTest {
 
     @Test
     void testToString() {
-        assertEquals("(1,1)", "(" + position.row() + "," + position.col() + ")");
-        assertNotEquals("(0,1)", "(" + position.row() + "," + position.col() + ")");
+        assertEquals("(1,1)", position.toString());
+        assertNotEquals("(0,1)", position.toString());
     }
 
 }

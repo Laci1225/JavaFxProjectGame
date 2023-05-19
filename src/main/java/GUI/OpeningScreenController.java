@@ -48,9 +48,21 @@ public class OpeningScreenController {
         }
     }
 
+    public void showLeaderboard(ActionEvent actionEvent) {
+
+        LeaderboardController leaderboardController = new LeaderboardController();
+
+        leaderboardController.showLeaderboard(actionEvent);
+
+    }
+
+    public void quit(ActionEvent actionEvent) {
+        Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+        stage.close();
+        Logger.info("Quiting game");
+    }
+
     public boolean isPlayersNameGiven() {
-        //System.out.println(player1.getText());
-        //System.out.println(player2.getText());
         return !(player1.getText().isEmpty() || player2.getText().isEmpty());
     }
 }

@@ -30,5 +30,15 @@
       </Label>
       <TextField fx:id="player1" layoutX="91.0" layoutY="250.0" promptText="Enter Player 1's name" />
       <TextField fx:id="player2" layoutX="360.0" layoutY="250.0" promptText="Enter Player 2's name" />
+      <Button layoutX="22.0" layoutY="355.0" mnemonicParsing="false" onAction="#quit" text="Quit">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
+      <Button layoutX="483.0" layoutY="355.0" mnemonicParsing="false" onAction="#showLeaderboard" text="Leaderboard">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

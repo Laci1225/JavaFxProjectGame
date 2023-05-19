@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="GUI.LeaderboardController">
+    <TableView fx:id="leaderboard" layoutX="14.0" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity"
+               minHeight="-Infinity" minWidth="-Infinity" prefHeight="324.0" prefWidth="572.0">
+        <columns>
+            <TableColumn fx:id="winner" prefWidth="140.0" text="winner" style="-fx-alignment: CENTER"/>
+            <TableColumn fx:id="step" minWidth="4.0" prefWidth="60" text="step" style="-fx-alignment: CENTER"/>
+            <TableColumn fx:id="start" minWidth="0.0" prefWidth="140" text="start" style="-fx-alignment: CENTER"/>
+            <TableColumn fx:id="end" prefWidth="140" text="end" style="-fx-alignment: CENTER"/>
+            <TableColumn fx:id="duration" prefWidth="91.2" text="duration" style="-fx-alignment: CENTER"/>
+        </columns>
+    </TableView>
+    <Button layoutX="32.0" layoutY="365.0" mnemonicParsing="false" onAction="#quit" text="Quit">
+        <font>
+            <Font size="14.0"/>
+        </font>
+    </Button>
+    <Button layoutX="493.0" layoutY="365.0" mnemonicParsing="false" onAction="#showOpeningScene" text="Start game">
+        <font>
+            <Font size="14.0"/>
+        </font>
+    </Button>
+    <Button layoutX="277.0" layoutY="365.0" mnemonicParsing="false" onAction="#clearData" text="Clear">
+        <font>
+            <Font size="14.0"/>
+        </font>
+    </Button>
+</AnchorPane>

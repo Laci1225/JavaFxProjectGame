@@ -27,6 +27,7 @@ import org.tinylog.Logger;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ProjectGameController {
 
@@ -77,8 +78,8 @@ public class ProjectGameController {
                 selectedCircle = (Circle) node;
 
                 selectedCircle.setStroke(Color.BLACK);
-                setStrokeWidthFor(selectedCircle);
-                //gameBoard.setStrokeForTargetRectangle()
+                setStrokeWidth(selectedCircle);
+                setStrokeForTargetRectangle(gameModel.possibleMovement(position));
                 gameModel.selectFrom(selected);
                 Logger.debug("From: ({},{})", selected.col(), selected.row());
 
@@ -101,7 +102,6 @@ public class ProjectGameController {
                 Logger.error("Illegal step");
             }
         }
-
         handleGameOver();
     }
 
@@ -121,7 +121,7 @@ public class ProjectGameController {
         }
     }
 
-    private final static String leaderboardFileName = "leaderboard.json";
+    public final static String leaderboardFileName = "leaderboard.json";
 
     private void writeWinnerToJson(String winner, int winnerStep) {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
@@ -152,21 +152,29 @@ public class ProjectGameController {
         }
     }
 
+    private void setStrokeForTargetRectangle(List<Position> possibleRectangles) {
+        for (Node node : gameBoard.getChildren()) {
+            if (node instanceof Rectangle && possibleRectangles
+                    .contains(new Position(GridPane.getRowIndex(node), GridPane.getColumnIndex(node)))) {
+                ((Rectangle) node).setStrokeWidth(2);
+            }
+        }
+    }
+
     private void resetAllStrokeWidthToDefault() {
         for (Node node : gameBoard.getChildren()) {
             if (node instanceof Circle) {
                 ((Circle) node).setStrokeWidth(0);
             }
+            if (node instanceof Rectangle)
+                ((Rectangle) node).setStrokeWidth(1);
         }
     }
 
-    private void setStrokeWidthFor(Node node) {
+    private void setStrokeWidth(Node node) {
         for (Node child : gameBoard.getChildren()) {
             if (child instanceof Circle) {
-                if (((Circle) child).getStrokeWidth() != 0) {
-                    resetAllStrokeWidthToDefault();
-                    break;
-                }
+                resetAllStrokeWidthToDefault();
             }
         }
         ((Circle) node).setStrokeWidth(2);

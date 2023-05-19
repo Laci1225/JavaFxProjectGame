@@ -1,4 +1,4 @@
-package Model;
+package model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,34 +86,6 @@ class PositionTest {
     }
 
     @Test
-    void testSetUp() {
-        position.setUp();
-
-        assertPosition(0, 1, position);
-    }
-
-    @Test
-    void testSetRight() {
-        position.setRight();
-
-        assertPosition(1, 2, position);
-    }
-
-    @Test
-    void testSetDown() {
-        position.setDown();
-
-        assertPosition(2, 1, position);
-    }
-
-    @Test
-    void testSetLeft() {
-        position.setLeft();
-
-        assertPosition(1, 0, position);
-    }
-
-    @Test
     void testEquals() {
         assertEquals(position, new Position(1, 1));
         assertNotEquals(position, new Position(3, 3));
@@ -131,7 +103,7 @@ class PositionTest {
     void testClone() {
         assertNotSame(position, position.clone());
         assertEquals(position, position.clone());
-        assertNotEquals(position,position.getDown().clone());
+        assertNotEquals(position, position.getDown().clone());
     }
 
     @Test

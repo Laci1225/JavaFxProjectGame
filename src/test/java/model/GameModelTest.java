@@ -1,6 +1,5 @@
-package Model;
+package model;
 
-import javafx.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -104,17 +103,6 @@ class GameModelTest {
     }
 
     @Test
-    void testToStringToTable() {
-        String[][] grid = gameModel.toStringToTable();
-
-        assertNotNull(grid);
-        assertEquals(5, grid.length);
-        assertEquals(4, grid[0].length);
-        assertEquals("B", grid[0][0]);
-        assertEquals("B", grid[4][3]);
-    }
-
-    @Test
     void testMoveItem() {
         Item item = gameModel.getItems()[0];
 
@@ -128,6 +116,7 @@ class GameModelTest {
 
 
     }
+
     @Test
     void testMoveItem_shouldThrowIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> gameModel
@@ -143,9 +132,9 @@ class GameModelTest {
 
     @Test
     void testCheckTargetState() {
-        Pair<ItemType, Boolean> state1 = gameModel.checkTargetState();
-        assertNull(state1.getKey());
-        assertFalse(state1.getValue());
+        TargetStateChecker state1 = gameModel.checkTargetState();
+        assertNull(state1.getItemType());
+        assertFalse(state1.isTargetState());
 
 
         var blue1 = Arrays.stream(gameModel.getItems())
@@ -168,8 +157,8 @@ class GameModelTest {
         gameModel.moveItem(red1.position(), Direction.UP);
         gameModel.moveItem(blue3.position(), Direction.UP);
         //System.out.println(gameModel);
-        Pair<ItemType, Boolean> state2 = gameModel.checkTargetState();
-        assertEquals(state2.getKey(), ItemType.BLUE);
-        assertTrue(state2.getValue());
+        TargetStateChecker state2 = gameModel.checkTargetState();
+        assertEquals(state2.getItemType(), ItemType.BLUE);
+        assertTrue(state2.isTargetState());
     }
 }

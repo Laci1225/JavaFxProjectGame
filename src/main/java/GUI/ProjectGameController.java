@@ -1,10 +1,10 @@
 package GUI;
 
 
-import Model.Direction;
-import Model.GameModel;
-import Model.ItemType;
-import Model.Position;
+import model.Direction;
+import model.GameModel;
+import model.ItemType;
+import model.Position;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,16 +20,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
-import leaderboard.IdAndLeaderboardList;
+import leaderboard.LeaderboardHelper;
 import leaderboard.Leaderboard;
 import lombok.Setter;
 import org.tinylog.Logger;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public class ProjectGameController {
 
@@ -60,11 +57,6 @@ public class ProjectGameController {
         var col = GridPane.getColumnIndex(node);
         var selectedPosition = new Position(row, col);
         if (node instanceof Rectangle) {
-            /*var circle = gameBoard.getChildren().stream().filter(child -> (child instanceof Circle &&
-                    GridPane.getRowIndex(child).equals(row) &&
-                    GridPane.getColumnIndex(child).equals(col))).findFirst();
-            if (circle.isPresent())
-                node = circle.get();*/
             for (var circle : gameBoard.getChildren()) {
                 if (circle instanceof Circle &&
                         GridPane.getRowIndex(circle).equals(row) &&
@@ -77,7 +69,6 @@ public class ProjectGameController {
         handleClickOnNode(selectedPosition, node);
     }
 
-
     private void handleClickOnNode(Position position, Node node) {
 
         if (node instanceof Circle) {
@@ -86,8 +77,8 @@ public class ProjectGameController {
                 selectedCircle = (Circle) node;
 
                 selectedCircle.setStroke(Color.BLACK);
-                setStrokeWidth(selectedCircle);
-
+                setStrokeWidthFor(selectedCircle);
+                //gameBoard.setStrokeForTargetRectangle()
                 gameModel.selectFrom(selected);
                 Logger.debug("From: ({},{})", selected.col(), selected.row());
 
@@ -115,10 +106,10 @@ public class ProjectGameController {
     }
 
     private void handleGameOver() {
-        if (gameModel.checkTargetState().getValue()) {
-            Logger.info("{} has won the game", gameModel.checkTargetState().getKey());
+        if (gameModel.checkTargetState().isTargetState()) {
+            Logger.info("{} has won the game", gameModel.checkTargetState().getItemType());
 
-            String winner = (gameModel.checkTargetState().getKey().equals(ItemType.BLUE) ? player1Name : player2Name);
+            String winner = (gameModel.checkTargetState().getItemType().equals(ItemType.BLUE) ? player1Name : player2Name);
             int winnerStep = ((gameModel.getStep() % 2 == 0) ? gameModel.getStep() / 2 : gameModel.getStep() / 2 + 1);
             var alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText(winner + " won the game under " + winnerStep + " step");
@@ -137,70 +128,19 @@ public class ProjectGameController {
                 .registerModule(new JavaTimeModule());
         LocalDateTime finnishTime = LocalDateTime.now();
         try {
-            var idAndList = initIdAndList(objectMapper);
-            long id = idAndList.getId();
-            List<Leaderboard> leaderboardList = idAndList.getLeaderboard();
-            var leaderboard = leaderboardBuilder(id, startTime, winner, winnerStep, finnishTime);
-            addLeaderboardToList(leaderboardList, leaderboard, winner, winnerStep);
-            var orderedList = orderLeaderboardListByStepThenByDuration(leaderboardList);
+            LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
+            leaderboardHelper.initIdAndList(objectMapper, leaderboardFileName);
+            Leaderboard leaderboard = leaderboardHelper.leaderboardBuilder(startTime, winner, winnerStep, finnishTime);
+            leaderboardHelper.addLeaderboardToList(leaderboard);
+
+            var orderedList = leaderboardHelper.orderLeaderboardListByStepThenByDuration();
             objectMapper.writeValue(new FileWriter(leaderboardFileName), orderedList);
+
             Logger.info("Winner has written to {}", leaderboardFileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    private List<Leaderboard> orderLeaderboardListByStepThenByDuration(List<Leaderboard> leaderboardList) {
-        return leaderboardList.stream().sorted(Comparator.comparing(
-                Leaderboard::getStep).thenComparing(Leaderboard::getDuration)).toList();
-    }
-
-    private void addLeaderboardToList(List<Leaderboard> leaderboardList, Leaderboard leaderboard, String winner, int winnerStep) {
-        var sameName = leaderboardList.stream().
-                filter(leaderboard1 -> leaderboard1.getWinner().equals(winner)).findFirst();
-        if (sameName.isPresent()) {
-            if (sameName.get().getStep() > winnerStep) {
-                leaderboardList.remove(sameName.get());
-                leaderboardList.add(leaderboard);
-            }
-        } else
-            leaderboardList.add(leaderboard);
-    }
-
-    private IdAndLeaderboardList initIdAndList(ObjectMapper objectMapper) throws IOException {
-        long id;
-        List<Leaderboard> leaderboardList;
-        File file = new File(leaderboardFileName);
-        if (file.length() == 0) {
-            leaderboardList = new ArrayList<>();
-            id = 0L;
-        } else {
-            leaderboardList = objectMapper.readValue(new FileReader(leaderboardFileName),
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, Leaderboard.class));
-            var maxId = leaderboardList.stream().map(Leaderboard::getId).max(Long::compareTo);
-            if (maxId.isPresent()) {
-                id = maxId.get() + 1;
-            } else throw new IllegalArgumentException("Id not found"); //never happens
-        }
-        return new IdAndLeaderboardList(id, leaderboardList);
-    }
-
-    private Leaderboard leaderboardBuilder(Long id, LocalDateTime startTime, String winner, int winnerStep, LocalDateTime finnishTime) {
-        return Leaderboard.builder()
-                .id(id)
-                .start(startTime.getYear() + " " + startTime.getMonthValue() + " " +
-                        startTime.getDayOfMonth() + " " + startTime.getHour() + " " +
-                        startTime.getMinute() + " " + startTime.getSecond())
-                .winner(winner)
-                .step(winnerStep)
-                .end(finnishTime.getYear() + " " + finnishTime.getMonthValue() + " " +
-                        startTime.getDayOfMonth() + " " + finnishTime.getHour() + " " +
-                        finnishTime.getMinute() + " " + finnishTime.getSecond())
-                .duration((finnishTime.getHour() * 3600 + finnishTime.getMinute() * 60 + finnishTime.getSecond())
-                        - (startTime.getHour() * 3600 + startTime.getMinute() * 60 + startTime.getSecond()))
-                .build();
-    }
-
 
     private void restartGame() {
         OpeningScreenApplication openingScreenApplication = new OpeningScreenApplication();
@@ -220,7 +160,7 @@ public class ProjectGameController {
         }
     }
 
-    private void setStrokeWidth(Node node) {
+    private void setStrokeWidthFor(Node node) {
         for (Node child : gameBoard.getChildren()) {
             if (child instanceof Circle) {
                 if (((Circle) child).getStrokeWidth() != 0) {
@@ -231,7 +171,6 @@ public class ProjectGameController {
         }
         ((Circle) node).setStrokeWidth(2);
     }
-
 
     private void initRectangle() {
         for (int i = 0; i < gameModel.ROW_SIZE; i++) {

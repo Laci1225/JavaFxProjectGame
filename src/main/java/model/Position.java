@@ -1,4 +1,4 @@
-package Model;
+package model;
 
 import java.util.Objects;
 
@@ -89,34 +89,6 @@ public class Position implements Cloneable {
     public void setTo(Direction direction) {
         row += direction.getRowChange();
         col += direction.getColChange();
-    }
-
-    /**
-     * Convenience method that is equivalent to {@code setTo(Direction.UP)}.
-     */
-    public void setUp() {
-        setTo(Direction.UP);
-    }
-
-    /**
-     * Convenience method that is equivalent to {@code setTo(Direction.RIGHT)}.
-     */
-    public void setRight() {
-        setTo(Direction.RIGHT);
-    }
-
-    /**
-     * Convenience method that is equivalent to {@code setTo(Direction.DOWN)}.
-     */
-    public void setDown() {
-        setTo(Direction.DOWN);
-    }
-
-    /**
-     * Convenience method that is equivalent to {@code setTo(Direction.LEFT)}.
-     */
-    public void setLeft() {
-        setTo(Direction.LEFT);
     }
 
     @Override

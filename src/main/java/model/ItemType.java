@@ -1,4 +1,4 @@
-package Model;
+package model;
 
 /**
  * Represents the color of an item in a game.

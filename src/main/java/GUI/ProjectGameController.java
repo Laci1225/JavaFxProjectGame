@@ -1,6 +1,7 @@
 package GUI;
 
 
+import lombok.Getter;
 import model.Direction;
 import model.GameModel;
 import model.ItemType;
@@ -35,6 +36,9 @@ public class ProjectGameController {
     @FXML
     private GridPane gameBoard;
     private final GameModel gameModel = new GameModel();
+
+    @Getter
+    private final static String LEADERBOARD_FILE_NAME = "leaderboard.json";
 
     private Position selected;
 
@@ -80,13 +84,14 @@ public class ProjectGameController {
                 selectedCircle.setStroke(Color.BLACK);
                 setStrokeWidth(selectedCircle);
                 setStrokeForTargetRectangle(gameModel.possibleMovement(position));
-                gameModel.selectFrom(selected);
+                gameModel.setSelected(true);
+                //gameModel.selectFrom(selected);
                 Logger.debug("From: ({},{})", selected.col(), selected.row());
 
             } else
                 Logger.warn("Not its turn hexValue: {} Circle's hexValue: {}",
                         gameModel.getTurn().hexValue(), ((Circle) node).getFill().toString());
-        } else if (gameModel.isSelectFrom() && node instanceof Rectangle) {
+        } else if (gameModel.isSelected() && node instanceof Rectangle) {
             if (gameModel.possibleMovement(selected).contains(position)) {
                 resetAllStrokeWidthToDefault();
                 var direct = Direction.of(position.row() - selected.row(),
@@ -121,7 +126,6 @@ public class ProjectGameController {
         }
     }
 
-    public final static String leaderboardFileName = "leaderboard.json";
 
     private void writeWinnerToJson(String winner, int winnerStep) {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
@@ -129,14 +133,14 @@ public class ProjectGameController {
         LocalDateTime finnishTime = LocalDateTime.now();
         try {
             LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
-            leaderboardHelper.initIdAndList(objectMapper, leaderboardFileName);
+            leaderboardHelper.initIdAndList(objectMapper, LEADERBOARD_FILE_NAME);
             Leaderboard leaderboard = leaderboardHelper.leaderboardBuilder(startTime, winner, winnerStep, finnishTime);
             leaderboardHelper.addLeaderboardToList(leaderboard);
 
             var orderedList = leaderboardHelper.orderLeaderboardListByStepThenByDuration();
-            objectMapper.writeValue(new FileWriter(leaderboardFileName), orderedList);
+            objectMapper.writeValue(new FileWriter(LEADERBOARD_FILE_NAME), orderedList);
 
-            Logger.info("Winner has written to {}", leaderboardFileName);
+            Logger.info("Winner has written to {}", LEADERBOARD_FILE_NAME);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

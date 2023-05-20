@@ -37,7 +37,6 @@ public class Position implements Cloneable {
 
     /**
      * @param direction a direction that specifies a change in the coordinates
-     *
      * @return the position whose vertical and horizontal distances from this
      * position are equal to the coordinate changes of the direction given
      */
@@ -83,8 +82,8 @@ public class Position implements Cloneable {
 
     /**
      * Changes the position by the coordinate changes of the direction given.
-     * @param direction a direction that specifies a change in the coordinates
      *
+     * @param direction a direction that specifies a change in the coordinates
      */
     public void setTo(Direction direction) {
         row += direction.getRowChange();

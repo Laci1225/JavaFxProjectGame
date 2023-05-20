@@ -1,12 +1,15 @@
 package model;
 
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Getter
+/**
+ * Represents a game logic to a simple board game.
+ */
+@Data
 public class GameModel {
 
     public final int ROW_SIZE = 5;
@@ -15,6 +18,9 @@ public class GameModel {
     private final Item[] items;
     private int step = 0;
 
+    /**
+     * Constructs a new {@link GameModel} object with default positions.
+     */
     public GameModel() {
         this(
                 new Item(ItemType.BLUE, new Position(0, 0)),
@@ -28,34 +34,38 @@ public class GameModel {
         );
     }
 
+    /**
+     * Initialize {@code items} array's items.
+     *
+     * @param items The initial item positions on the game board
+     */
     public GameModel(Item... items) {
         this.items = items;
     }
 
     private ItemType turn = ItemType.BLUE;
 
+    /**
+     * Set {@link ItemType} color to opposite.
+     *
+     * @param turn the color wanted to be switched to
+     */
     public void setTurn(ItemType turn) {
         this.turn = turn;
     }
 
-    private boolean selectFrom;
 
-    public Position selectFrom(Position p) {
-        if (isOnTable(p) && !isNotOccupied(p)) {
-            selectFrom = true;
-            return p;
-        } else throw new IllegalArgumentException("Not an Item");
-    }
+    private boolean selected;
 
-    public Position selectTo(Position p) {
-        if (isOnTable(p) && isNotOccupied(p)) {
-            turn = turn.switchColor();
-            selectFrom = false;
-            return p;
-        } else throw new IllegalArgumentException("Not an empty Square");
-    }
-
-
+    /**
+     * Moves an {@link Item} on the game board in the specified direction.
+     *
+     * @param position  coordinates of the {@link Item} to move
+     * @param direction direction in which to move the {@link Item}
+     * @throws IllegalStateException    If the item can not be found
+     * @throws IllegalArgumentException If the movement is invalid,
+     *                                  or if it's not the item's turn
+     */
     public void moveItem(Position position, Direction direction) {
         step++;
 
@@ -64,8 +74,7 @@ public class GameModel {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Item not found at the given position"));
 
-        Position newPosition = selectFrom(position).getPosition(direction);
-        if (!possibleMovement(item.position()).contains(newPosition)) {
+        if (!possibleMovement(item.position()).contains(position.getPosition(direction))) {
             throw new IllegalArgumentException("Invalid movement: Not a valid step or item");
         }
 
@@ -73,18 +82,29 @@ public class GameModel {
             throw new IllegalArgumentException("Invalid movement: Not the item's turn");
         }
 
-        if (!possibleMovement(item.position()).contains(selectTo(newPosition))) {
-            throw new IllegalArgumentException("Invalid movement");
-        }
-
         item.moveTo(direction);
+        setSelected(false);
+        setTurn(turn.switchColor());
     }
 
+    /**
+     * Checks the possible winner positions of the game.
+     *
+     * @return A {@link TargetStateChecker} object that represents the outcome of the check
+     */
     public TargetStateChecker checkTargetState() {
         Character[][] grid = makeBoard();
         return TargetStateChecker.checkTarget(grid);
     }
 
+
+    /**
+     * Creates a 2D grid representation of the game.
+     * Writes {@link ItemType}'s first character, otherwise 0
+     * It is a helper method for {@code checkTargetState}
+     *
+     * @return A 2D character array representing the game
+     */
     public Character[][] makeBoard() {
         Character[][] board = new Character[ROW_SIZE][COL_SIZE];
         for (int i = 0; i < ROW_SIZE; i++) {
@@ -103,25 +123,42 @@ public class GameModel {
         return board;
     }
 
+
+    /**
+     * Returns a list of possible movements from the given {@link Position}.
+     *
+     * @param position The position to check
+     * @return A list of possible movements
+     */
     public List<Position> possibleMovement(Position position) {
         List<Position> possibleMovements = new ArrayList<>();
-        if (isOnTable(position.getUp()) && isNotOccupied(position.getUp()))
+        if (isOnBoard(position.getUp()) && isNotOccupied(position.getUp()))
             possibleMovements.add(position.getUp());
-        if (isOnTable(position.getRight()) && isNotOccupied(position.getRight()))
+        if (isOnBoard(position.getRight()) && isNotOccupied(position.getRight()))
             possibleMovements.add(position.getRight());
-        if (isOnTable(position.getDown()) && isNotOccupied(position.getDown()))
+        if (isOnBoard(position.getDown()) && isNotOccupied(position.getDown()))
             possibleMovements.add(position.getDown());
-        if (isOnTable(position.getLeft()) && isNotOccupied(position.getLeft()))
+        if (isOnBoard(position.getLeft()) && isNotOccupied(position.getLeft()))
             possibleMovements.add(position.getLeft());
 
         return possibleMovements;
     }
 
-    public boolean isOnTable(Position position) {
+    /**
+     * Returns if a given position is on the board.
+     * @param position The position to check
+     * @return whether it is on the board or not
+     */
+    public boolean isOnBoard(Position position) {
         return (-1 < position.row() && position.row() < ROW_SIZE &&
                 -1 < position.col() && position.col() < COL_SIZE);
     }
 
+    /**
+     * Returns if a given position is inhabited.
+     * @param position The position to check
+     * @return whether it is occupied or not
+     */
     public boolean isNotOccupied(Position position) {
         for (var piece : items) {
             if (position.equals(piece.position()))

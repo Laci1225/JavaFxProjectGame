@@ -56,14 +56,13 @@ public class LeaderboardHelper {
      * @return a constructed Leaderboard object
      */
     public Leaderboard leaderboardBuilder(LocalDateTime startTime, String winner, int winnerStep, LocalDateTime finishTime) {
-        long durationSeconds = Duration.between(startTime, finishTime).getSeconds();
+        int durationSeconds = (int) Duration.between(startTime, finishTime).getSeconds();
 
         return Leaderboard.builder()
                 .id(this.id)
                 .start(formatDateTime(startTime))
                 .winner(winner)
                 .step(winnerStep)
-                .end(formatDateTime(finishTime))
                 .duration(durationSeconds)
                 .build();
     }

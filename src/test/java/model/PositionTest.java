@@ -88,6 +88,7 @@ class PositionTest {
     @Test
     void testEquals() {
         assertEquals(position, new Position(1, 1));
+        assertEquals(position, position);
         assertNotEquals(position, new Position(3, 3));
         assertNotEquals(position, null);
         assertNotEquals(position, new Position(-1, -1));

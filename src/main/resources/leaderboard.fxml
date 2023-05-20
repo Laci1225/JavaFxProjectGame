@@ -12,10 +12,9 @@
                minHeight="-Infinity" minWidth="-Infinity" prefHeight="324.0" prefWidth="572.0">
         <columns>
             <TableColumn fx:id="winner" prefWidth="140.0" text="winner" style="-fx-alignment: CENTER"/>
-            <TableColumn fx:id="step" minWidth="4.0" prefWidth="60" text="step" style="-fx-alignment: CENTER"/>
+            <TableColumn fx:id="step" minWidth="4.0" prefWidth="100" text="step" style="-fx-alignment: CENTER"/>
             <TableColumn fx:id="start" minWidth="0.0" prefWidth="140" text="start" style="-fx-alignment: CENTER"/>
-            <TableColumn fx:id="end" prefWidth="140" text="end" style="-fx-alignment: CENTER"/>
-            <TableColumn fx:id="duration" prefWidth="91.2" text="duration" style="-fx-alignment: CENTER"/>
+            <TableColumn fx:id="duration" prefWidth="150" text="duration" style="-fx-alignment: CENTER"/>
         </columns>
     </TableView>
     <Button layoutX="32.0" layoutY="365.0" mnemonicParsing="false" onAction="#quit" text="Quit">

@@ -24,44 +24,38 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-import static GUI.ProjectGameController.leaderboardFileName;
 
 public class LeaderboardController {
     @FXML
-    public TableView<Leaderboard> leaderboard;
+    private TableView<Leaderboard> leaderboard;
     @FXML
-    public TableColumn<Leaderboard, String> winner;
+    private TableColumn<Leaderboard, String> winner;
     @FXML
-    public TableColumn<Leaderboard, Integer> step;
+    private TableColumn<Leaderboard, Integer> step;
     @FXML
-    public TableColumn<Leaderboard, String> start;
+    private TableColumn<Leaderboard, String> start;
     @FXML
-    public TableColumn<Leaderboard, String> end;
-    @FXML
-    public TableColumn<Leaderboard, Long> duration;
-
-    ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+    private TableColumn<Leaderboard,Integer> duration;
+    private final static String LEADERBOARD_FILE_NAME = ProjectGameController.getLEADERBOARD_FILE_NAME();
+    private static final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule());
 
     private String getFormattedDuration(long duration) {
         int hours = (int) (duration / 3600);
         int minutes = (int) ((duration % 3600) / 60);
         int seconds = (int) (duration % 60);
-
         return hours + "h " + minutes + "m " + seconds + "s";
     }
-
 
     @FXML
     private void initialize() {
         winner.setCellValueFactory(new PropertyValueFactory<>("winner"));
         step.setCellValueFactory(new PropertyValueFactory<>("step"));
         start.setCellValueFactory(new PropertyValueFactory<>("start"));
-        end.setCellValueFactory(new PropertyValueFactory<>("end"));
         duration.setCellValueFactory(new PropertyValueFactory<>("duration"));
         duration.setCellFactory(column -> new TableCell<>() {
             @Override
-            protected void updateItem(Long duration, boolean empty) {
+            protected void updateItem(Integer duration, boolean empty) {
                 super.updateItem(duration, empty);
                 if (empty || duration == null) {
                     setText(null);
@@ -73,7 +67,7 @@ public class LeaderboardController {
 
         try {
             LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
-            leaderboardHelper.initIdAndList(objectMapper, leaderboardFileName);
+            leaderboardHelper.initIdAndList(objectMapper, LEADERBOARD_FILE_NAME);
             List<Leaderboard> leaderboardList = leaderboardHelper.getLeaderboardList()
                     .subList(0, Math.min(leaderboardHelper.getLeaderboardList().size(), 10));
             ObservableList<Leaderboard> observableResult = FXCollections.observableArrayList();
@@ -118,7 +112,7 @@ public class LeaderboardController {
     public void clearData(ActionEvent actionEvent) throws IOException {
         LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
         ObjectMapper objectMapper = new ObjectMapper();
-        leaderboardHelper.clearJson(objectMapper, leaderboardFileName);
+        leaderboardHelper.clearJson(objectMapper, LEADERBOARD_FILE_NAME);
         initialize();
     }
 }

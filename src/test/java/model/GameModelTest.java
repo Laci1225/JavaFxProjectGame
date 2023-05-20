@@ -20,22 +20,22 @@ class GameModelTest {
 
     @Test
     void testIsOnTable() {
-        assertTrue(gameModel.isOnTable(position));
+        assertTrue(gameModel.isOnBoard(position));
 
         position = new Position(-1, 3);
-        assertFalse(gameModel.isOnTable(position));
+        assertFalse(gameModel.isOnBoard(position));
 
         position = new Position(-1, -1);
-        assertFalse(gameModel.isOnTable(position));
+        assertFalse(gameModel.isOnBoard(position));
 
         position = new Position(5, 3);
-        assertFalse(gameModel.isOnTable(position));
+        assertFalse(gameModel.isOnBoard(position));
 
         position = new Position(4, 3);
-        assertTrue(gameModel.isOnTable(position));
+        assertTrue(gameModel.isOnBoard(position));
 
         position = new Position(3, 3);
-        assertTrue(gameModel.isOnTable(position));
+        assertTrue(gameModel.isOnBoard(position));
     }
 
     @Test
@@ -100,6 +100,7 @@ class GameModelTest {
         assertTrue(possibleMovements.contains(new Position(3, 1)));
         assertTrue(possibleMovements.contains(new Position(2, 0)));
         assertFalse(possibleMovements.contains(new Position(2, 1)));
+        assertFalse(possibleMovements.contains(new Position(4, 5)));
     }
 
     @Test
@@ -118,21 +119,24 @@ class GameModelTest {
     }
 
     @Test
-    void testMoveItem_shouldThrowIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> gameModel
+    void testMoveItem_shouldThrowIllegalStateOrArgumentException() {
+        assertThrows(IllegalStateException.class, () -> gameModel
                 .moveItem(new Item(ItemType.BLUE, new Position(3, 3))
                         .position(), Direction.RIGHT));
         assertThrows(IllegalArgumentException.class, () -> gameModel
                 .moveItem(new Item(ItemType.BLUE, new Position(4, 3))
                         .position(), Direction.DOWN));
-        assertThrows(IllegalArgumentException.class, () -> gameModel
-                .moveItem(new Item(ItemType.BLUE, new Position(3, 3))
-                        .position(), Direction.LEFT));
+        assertThrows(IllegalArgumentException.class, () -> {
+            Item item = gameModel.getItems()[0];
+            gameModel.moveItem(item.position(), Direction.DOWN);
+            gameModel.moveItem(item.position(), Direction.RIGHT);
+        });
     }
 
     @Test
     void testCheckTargetState() {
         TargetStateChecker state1 = gameModel.checkTargetState();
+
         assertNull(state1.getItemType());
         assertFalse(state1.isTargetState());
 
@@ -156,9 +160,17 @@ class GameModelTest {
         gameModel.moveItem(blue3.position(), Direction.UP);
         gameModel.moveItem(red1.position(), Direction.UP);
         gameModel.moveItem(blue3.position(), Direction.UP);
-        //System.out.println(gameModel);
+
         TargetStateChecker state2 = gameModel.checkTargetState();
+
         assertEquals(state2.getItemType(), ItemType.BLUE);
         assertTrue(state2.isTargetState());
+    }
+
+    @Test
+    void testToString(){
+        String test = "[B, R, B, R]\n[0, 0, 0, 0]\n[0, 0, 0, 0]\n[0, 0, 0, 0]\n[R, B, R, B]";
+
+        assertEquals(test,gameModel.toString());
     }
 }

@@ -34,7 +34,7 @@ class LeaderboardHelperTest {
     public Leaderboard addOneSampleLeaderboard() throws IOException {
         List<Leaderboard> leaderboardTest = new ArrayList<>();
         Leaderboard leaderboard = Leaderboard.builder()
-                .id(0L).winner("Sample").step(10).duration(100L).build();
+                .id(0L).winner("Sample").step(10).duration(100).build();
         leaderboardTest.add(leaderboard);
         objectMapper.writeValue(file, leaderboardTest);
         return leaderboard;
@@ -66,7 +66,7 @@ class LeaderboardHelperTest {
         String winner = "John";
         int winnerStep = 10;
         LocalDateTime finishTime = startTime.plusHours(1);
-        long duration = Duration.between(startTime, finishTime).getSeconds();
+        int duration = (int) Duration.between(startTime, finishTime).getSeconds();
 
         Leaderboard leaderboard = leaderboardHelper.leaderboardBuilder(startTime, winner, winnerStep, finishTime);
 

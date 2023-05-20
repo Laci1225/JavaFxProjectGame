@@ -5,6 +5,7 @@ import lombok.Getter;
 
 /**
  * Responsible for checking the target state in a grid of characters.
+ * It stores an {@link ItemType} if it is a winner step
  */
 @Getter
 @AllArgsConstructor

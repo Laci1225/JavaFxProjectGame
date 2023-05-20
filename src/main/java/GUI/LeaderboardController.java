@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -37,10 +38,18 @@ public class LeaderboardController {
     @FXML
     public TableColumn<Leaderboard, String> end;
     @FXML
-    public TableColumn<Leaderboard, Integer> duration;
+    public TableColumn<Leaderboard, Long> duration;
 
     ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
             .registerModule(new JavaTimeModule());
+
+    private String getFormattedDuration(long duration) {
+        int hours = (int) (duration / 3600);
+        int minutes = (int) ((duration % 3600) / 60);
+        int seconds = (int) (duration % 60);
+
+        return hours + "h " + minutes + "m " + seconds + "s";
+    }
 
 
     @FXML
@@ -50,6 +59,17 @@ public class LeaderboardController {
         start.setCellValueFactory(new PropertyValueFactory<>("start"));
         end.setCellValueFactory(new PropertyValueFactory<>("end"));
         duration.setCellValueFactory(new PropertyValueFactory<>("duration"));
+        duration.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Long duration, boolean empty) {
+                super.updateItem(duration, empty);
+                if (empty || duration == null) {
+                    setText(null);
+                } else {
+                    setText(getFormattedDuration(duration));
+                }
+            }
+        });
 
         try {
             LeaderboardHelper leaderboardHelper = new LeaderboardHelper();

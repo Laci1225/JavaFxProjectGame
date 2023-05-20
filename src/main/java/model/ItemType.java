@@ -16,7 +16,7 @@ public enum ItemType {
     }
 
     /**
-     * {@return the hexadecimal value of this item's color}
+     * @return the hexadecimal value of this item's color.
      */
     public String hexValue() {
         return (this == BLUE) ? "0x0000ffff" : "0xff0000ff";

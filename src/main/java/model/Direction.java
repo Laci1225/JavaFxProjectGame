@@ -20,11 +20,10 @@ public enum Direction {
     private final int colChange;
 
     /**
-     * {@return the direction that corresponds to the coordinate changes
-     * specified}
-     *
      * @param rowChange the change in the row coordinate
      * @param colChange the change in the column coordinate
+     * @return the direction that corresponds to the coordinate changes
+     * specified
      */
     public static Direction of(int rowChange, int colChange) {
         for (var direction : values()) {

@@ -2,6 +2,8 @@ package model;
 
 /**
  * Represents a 2D item.
+ * @param type is a {@link ItemType}
+ * @param position is a {@link Position}
  */
 public record Item(ItemType type, Position position) {
 

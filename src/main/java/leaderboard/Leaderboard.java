@@ -3,18 +3,19 @@ package leaderboard;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 
-@Data
 @Builder
+@Getter
 public class Leaderboard {
     private Long id;
     private String start;
     private String winner;
     private Integer step;
     private String end;
-    private Integer duration;
+    private Long duration;
+
 
     @JsonCreator
     public Leaderboard(@JsonProperty("id") Long id,
@@ -22,7 +23,7 @@ public class Leaderboard {
                        @JsonProperty("winner") String winner,
                        @JsonProperty("step") Integer step,
                        @JsonProperty("end") String end,
-                       @JsonProperty("duration") Integer duration) {
+                       @JsonProperty("duration") Long duration) {
         this.id = id;
         this.start = start;
         this.winner = winner;

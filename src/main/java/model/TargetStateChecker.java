@@ -3,12 +3,21 @@ package model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Responsible for checking the target state in a grid of characters.
+ */
 @Getter
 @AllArgsConstructor
 public class TargetStateChecker {
     private ItemType itemType;
     private boolean targetState;
 
+    /**
+     * Checks the target state in a grid of characters.
+     *
+     * @param grid the grid of characters to check
+     * @return a new {@link TargetStateChecker} object with the result of the check
+     */
     public static TargetStateChecker checkTarget(Character[][] grid) {
         Character blue = ItemType.BLUE.toString().charAt(0);
         Character red = ItemType.RED.toString().charAt(0);

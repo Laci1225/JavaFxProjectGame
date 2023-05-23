@@ -1,6 +1,7 @@
 package leaderboard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ class LeaderboardHelperTest {
     private LeaderboardHelper leaderboardHelper;
     private ObjectMapper objectMapper;
     private String leaderboardFileName;
-    private File file;
+    private static File file;
 
     @BeforeEach
     public void setUp() {
@@ -29,6 +30,11 @@ class LeaderboardHelperTest {
         if (file.exists()) {
             assertTrue(file.delete());
         }
+    }
+
+    @AfterAll
+    static void deleteFile() {
+        assertTrue(file.delete());
     }
 
     public Leaderboard addOneSampleLeaderboard() throws IOException {

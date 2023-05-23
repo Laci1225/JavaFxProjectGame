@@ -66,6 +66,5 @@ public class TargetStateChecker {
             }
         }
         return new TargetStateChecker(null, false);
-
     }
 }

@@ -14,9 +14,10 @@ public class GameModel {
 
     public final int ROW_SIZE = 5;
     public final int COL_SIZE = 4;
-
     private final Item[] items;
     private int step = 0;
+    private boolean selected;
+    private ItemType turn = ItemType.BLUE;
 
     /**
      * Constructs a new {@link GameModel} object with default positions.
@@ -43,7 +44,6 @@ public class GameModel {
         this.items = items;
     }
 
-    private ItemType turn = ItemType.BLUE;
 
     /**
      * Set {@link ItemType} color to opposite.
@@ -54,8 +54,6 @@ public class GameModel {
         this.turn = turn;
     }
 
-
-    private boolean selected;
 
     /**
      * Moves an {@link Item} on the game board in the specified direction.
@@ -83,7 +81,6 @@ public class GameModel {
         }
 
         item.moveTo(direction);
-        setSelected(false);
         setTurn(turn.switchColor());
     }
 
@@ -96,7 +93,6 @@ public class GameModel {
         Character[][] grid = makeBoard();
         return TargetStateChecker.checkTarget(grid);
     }
-
 
     /**
      * Creates a 2D grid representation of the game.
@@ -122,7 +118,6 @@ public class GameModel {
         }
         return board;
     }
-
 
     /**
      * Returns a list of possible movements from the given {@link Position}.

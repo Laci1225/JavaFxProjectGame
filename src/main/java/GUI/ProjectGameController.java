@@ -32,18 +32,14 @@ import java.util.List;
 
 public class ProjectGameController {
 
-    private final LocalDateTime startTime = LocalDateTime.now();
+    @Getter
+    private static final String LEADERBOARD_FILE_NAME = "leaderboard.json";
+    private static final LocalDateTime START_TIME = LocalDateTime.now();
+    private final GameModel gameModel = new GameModel();
     @FXML
     private GridPane gameBoard;
-    private final GameModel gameModel = new GameModel();
-
-    @Getter
-    private final static String LEADERBOARD_FILE_NAME = "leaderboard.json";
-
     private Position selected;
-
     private Circle selectedCircle;
-
     @Setter
     private String player1Name;
     @Setter
@@ -75,17 +71,15 @@ public class ProjectGameController {
     }
 
     private void handleClickOnNode(Position position, Node node) {
-
         if (node instanceof Circle) {
             if (gameModel.getTurn().hexValue().equals(((Circle) node).getFill().toString())) {
                 selected = position;
                 selectedCircle = (Circle) node;
 
                 selectedCircle.setStroke(Color.BLACK);
-                setStrokeWidth(selectedCircle);
+                setStrokeWidthForCircle(selectedCircle);
                 setStrokeForTargetRectangle(gameModel.possibleMovement(position));
                 gameModel.setSelected(true);
-                //gameModel.selectFrom(selected);
                 Logger.debug("From: ({},{})", selected.col(), selected.row());
 
             } else
@@ -101,6 +95,8 @@ public class ProjectGameController {
                 gameBoard.add(selectedCircle, position.col(), position.row());
 
                 gameModel.moveItem(selected, direct);
+                gameModel.setSelected(false);
+
                 Logger.debug("To: ({},{})", position.col(), position.row());
 
             } else {
@@ -126,7 +122,6 @@ public class ProjectGameController {
         }
     }
 
-
     private void writeWinnerToJson(String winner, int winnerStep) {
         ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
                 .registerModule(new JavaTimeModule());
@@ -134,7 +129,7 @@ public class ProjectGameController {
         try {
             LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
             leaderboardHelper.initIdAndList(objectMapper, LEADERBOARD_FILE_NAME);
-            Leaderboard leaderboard = leaderboardHelper.leaderboardBuilder(startTime, winner, winnerStep, finnishTime);
+            Leaderboard leaderboard = leaderboardHelper.leaderboardBuilder(START_TIME, winner, winnerStep, finnishTime);
             leaderboardHelper.addLeaderboardToList(leaderboard);
 
             var orderedList = leaderboardHelper.orderLeaderboardListByStepThenByDuration();
@@ -175,7 +170,7 @@ public class ProjectGameController {
         }
     }
 
-    private void setStrokeWidth(Node node) {
+    private void setStrokeWidthForCircle(Node node) {
         for (Node child : gameBoard.getChildren()) {
             if (child instanceof Circle) {
                 resetAllStrokeWidthToDefault();

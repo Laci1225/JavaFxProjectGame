@@ -32,7 +32,6 @@ public class LeaderboardHelper {
      * @param leaderboardFileName the name of the JSON file containing leaderboard data
      * @throws IOException if an I/O error occurs while reading the JSON file
      */
-
     public void initIdAndList(ObjectMapper objectMapper, String leaderboardFileName) throws IOException {
         File file = new File(leaderboardFileName);
         if (file.length() == 0) {
@@ -65,16 +64,6 @@ public class LeaderboardHelper {
                 .step(winnerStep)
                 .duration(durationSeconds)
                 .build();
-    }
-
-    private String formatDateTime(LocalDateTime dateTime) {
-        return String.format("%d.%d.%d %02d:%02d:%02d",
-                dateTime.getYear(),
-                dateTime.getMonthValue(),
-                dateTime.getDayOfMonth(),
-                dateTime.getHour(),
-                dateTime.getMinute(),
-                dateTime.getSecond());
     }
 
     /**
@@ -115,6 +104,16 @@ public class LeaderboardHelper {
      */
     public void clearJson(ObjectMapper objectMapper, String leaderboardFileName) throws IOException {
         objectMapper.writeValue(new FileWriter(leaderboardFileName), new ArrayList<>());
+    }
+
+    private String formatDateTime(LocalDateTime dateTime) {
+        return String.format("%d.%d.%d %02d:%02d:%02d",
+                dateTime.getYear(),
+                dateTime.getMonthValue(),
+                dateTime.getDayOfMonth(),
+                dateTime.getHour(),
+                dateTime.getMinute(),
+                dateTime.getSecond());
     }
 }
 

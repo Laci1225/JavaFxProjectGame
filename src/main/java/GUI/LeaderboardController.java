@@ -26,6 +26,9 @@ import java.util.Objects;
 
 
 public class LeaderboardController {
+    private static final String LEADERBOARD_FILE_NAME = ProjectGameController.getLEADERBOARD_FILE_NAME();
+    private static final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+            .registerModule(new JavaTimeModule());
     @FXML
     private TableView<Leaderboard> leaderboard;
     @FXML
@@ -35,17 +38,7 @@ public class LeaderboardController {
     @FXML
     private TableColumn<Leaderboard, String> start;
     @FXML
-    private TableColumn<Leaderboard,Integer> duration;
-    private final static String LEADERBOARD_FILE_NAME = ProjectGameController.getLEADERBOARD_FILE_NAME();
-    private static final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-            .registerModule(new JavaTimeModule());
-
-    private String getFormattedDuration(long duration) {
-        int hours = (int) (duration / 3600);
-        int minutes = (int) ((duration % 3600) / 60);
-        int seconds = (int) (duration % 60);
-        return hours + "h " + minutes + "m " + seconds + "s";
-    }
+    private TableColumn<Leaderboard, Integer> duration;
 
     @FXML
     private void initialize() {
@@ -64,7 +57,10 @@ public class LeaderboardController {
                 }
             }
         });
+        setLeaderboard();
+    }
 
+    private void setLeaderboard() {
         try {
             LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
             leaderboardHelper.initIdAndList(objectMapper, LEADERBOARD_FILE_NAME);
@@ -85,13 +81,10 @@ public class LeaderboardController {
             fxmlLoader.setLocation(Objects.requireNonNull(getClass().getResource("/leaderboard.fxml")));
             Parent root = fxmlLoader.load();
 
-
             stage.setScene(new Scene(root));
             stage.setTitle("Leaderboard");
             stage.show();
             Logger.info("Showing Leaderboard");
-
-
         } catch (
                 IOException e) {
             throw new RuntimeException(e);
@@ -109,10 +102,17 @@ public class LeaderboardController {
         o.start(stage);
     }
 
-    public void clearData(ActionEvent actionEvent) throws IOException {
+    public void clearData() throws IOException {
         LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
         ObjectMapper objectMapper = new ObjectMapper();
         leaderboardHelper.clearJson(objectMapper, LEADERBOARD_FILE_NAME);
         initialize();
+    }
+
+    private String getFormattedDuration(long duration) {
+        int hours = (int) (duration / 3600);
+        int minutes = (int) ((duration % 3600) / 60);
+        int seconds = (int) (duration % 60);
+        return hours + "h " + minutes + "m " + seconds + "s";
     }
 }

@@ -16,7 +16,7 @@ side vertically, horizontally or diagonally.
 
 ### Hungarian
 
-Az látható módon rendezzünk el 4 kék és 4 piros korongot egy 5 × 4
+A fent látható módon rendezzünk el 4 kék és 4 piros korongot egy 5 × 4
 mezőből álló táblán. Az egyik játékos színe a kék, a másiké a piros. Felváltva
 következnek lépni, amelynek során egy saját színű korongot mozdítanak el
 egy négyszomszédos üres mezőre. Az a játékos nyer, akinek sikerül egymás

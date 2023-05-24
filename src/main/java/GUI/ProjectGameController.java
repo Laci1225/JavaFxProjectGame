@@ -45,6 +45,11 @@ public class ProjectGameController {
     @Setter
     private String player2Name;
 
+    @Getter
+    @Setter
+    private boolean isSelected;
+
+
     @FXML
     private void initialize() {
         initRectangle();
@@ -79,13 +84,13 @@ public class ProjectGameController {
                 selectedCircle.setStroke(Color.BLACK);
                 setStrokeWidthForCircle(selectedCircle);
                 setStrokeForTargetRectangle(gameModel.possibleMovement(position));
-                gameModel.setSelected(true);
+                setSelected(true);
                 Logger.debug("From: ({},{})", selected.col(), selected.row());
 
             } else
                 Logger.warn("Not its turn hexValue: {} Circle's hexValue: {}",
                         gameModel.getTurn().hexValue(), ((Circle) node).getFill().toString());
-        } else if (gameModel.isSelected() && node instanceof Rectangle) {
+        } else if (isSelected() && node instanceof Rectangle) {
             if (gameModel.possibleMovement(selected).contains(position)) {
                 resetAllStrokeWidthToDefault();
                 var direct = Direction.of(position.row() - selected.row(),
@@ -95,7 +100,7 @@ public class ProjectGameController {
                 gameBoard.add(selectedCircle, position.col(), position.row());
 
                 gameModel.moveItem(selected, direct);
-                gameModel.setSelected(false);
+                setSelected(false);
 
                 Logger.debug("To: ({},{})", position.col(), position.row());
 

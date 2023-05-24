@@ -16,7 +16,6 @@ public class GameModel {
     public final int COL_SIZE = 4;
     private final Item[] items;
     private int step = 0;
-    private boolean selected;
     private ItemType turn = ItemType.BLUE;
 
     /**

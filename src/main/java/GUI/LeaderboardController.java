@@ -105,6 +105,7 @@ public class LeaderboardController {
     public void clearData() throws IOException {
         LeaderboardHelper leaderboardHelper = new LeaderboardHelper();
         ObjectMapper objectMapper = new ObjectMapper();
+        Logger.info("Clearing Leaderboard");
         leaderboardHelper.clearJson(objectMapper, LEADERBOARD_FILE_NAME);
         initialize();
     }

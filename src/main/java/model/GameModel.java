@@ -49,7 +49,7 @@ public class GameModel {
      *
      * @param turn the color wanted to be switched to
      */
-    public void setTurn(ItemType turn) {
+    private void setTurn(ItemType turn) {
         this.turn = turn;
     }
 

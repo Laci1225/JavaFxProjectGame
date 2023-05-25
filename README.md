@@ -1,9 +1,7 @@
 # [JavaFX](https://openjfx.io/) Project Game
 
 
-### English
-
-This repository contains the source code for a game application with a graphical user interface (GUI).
+#### This repository contains the source code for a game application with a graphical user interface (GUI).
 The game is a turn-based strategy game where players take turns moving their game pieces on a grid board.
 The goal of the game is to reach a target state before the opponent.
 
